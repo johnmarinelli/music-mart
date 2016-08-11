@@ -9,4 +9,6 @@
                  [ring/ring-mock "0.3.0"]
                  [com.taoensso/carmine "2.14.0"] ; redis
                  [compojure "1.5.1"] ; routing
-                 ])
+                 [enlive "1.1.6"] ; scraping
+                ]
+  :main music-mart.core)
