@@ -16,10 +16,35 @@
         "</body></html>"))
 
 (def url "http://www.935kday.com/playlist/")
-(def selector [:ol.amp-recently-played])
+(def selector [:ol.amp-recently-played :li])
 
 (defn fetch-html [url]
   (scraper/html-resource (java.net.URL. url)))
+
+(defn scrape-html-for-songs [html selector cb]
+  (let [elements (scraper/select html selector)] 
+    (map cb elements)))
+
+(defn each-element [e]
+  (let [line (scraper/text e)
+        split (str/split line #"\n")
+        trimmed (map str/trim split)
+        filtered (filter #(> (count %) 0) trimmed)]
+    (apply array-map (interleave '(:time :song-title :artist) trimmed))))
+
+(defn go []
+  (let [url "http://www.935kday.com/playlist/"
+        selector [:ol.amp-recently-played :li]
+;        each-element (fn [e] ())
+        each-element (fn [e]
+        (let [line (scraper/text e)
+              split (str/split line #"\n")
+              trimmed (map str/trim split)
+              filtered (filter #(> (count %) 0) trimmed)]
+          (apply array-map (interleave '(:time :song-title :artist) trimmed))))
+        songs (scrape-html-for-songs (fetch-html url) selector each-element)
+        place-in-database (fn [song] ())]
+    (map identity songs)))
 
 (defn handler [{{name "name"} :params}]
   (-> (response (page name))
