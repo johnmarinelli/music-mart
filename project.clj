@@ -10,5 +10,7 @@
                  [com.taoensso/carmine "2.14.0"] ; redis
                  [compojure "1.5.1"] ; routing
                  [enlive "1.1.6"] ; scraping
-                ]
+                 [clojurewerkz/quartzite "2.0.0"] ; scheduler
+                 [org.clojure/tools.logging "0.3.1"] ; logging
+                 ]
   :main music-mart.core)
