@@ -24,8 +24,18 @@
 (def url "http://www.935kday.com/playlist/")
 (def selector [:ol.amp-recently-played :li])
 
-(defn -parse-kday-timestamp [ts]
-  )
+(defn parse-kday-timestamp [ts]
+  (let [trimmed (str/trim ts)
+        pieces (str/split trimmed #" ")
+        midday (str/lower-case (second pieces))
+        [hh mm] (map read-string (str/split (first pieces) #":"))
+        afternoon (= midday "pm")
+        timestamp-format (fn [h m] (format "%02d:%02d" h m))]
+    (if afternoon
+      (let [new-hh (if (> 12 hh) (+ 12 hh) hh)]
+        (timestamp-format new-hh mm))
+      (let [new-hh (if (= 12 hh) 0 hh)]
+        (timestamp-format new-hh mm)))))
 
 (defn fetch-html [url]
   (scraper/html-resource (java.net.URL. url)))
@@ -35,27 +45,24 @@
     (map cb elements)))
 
 (defn each-element [e]
-  (let [line (scraper/text e)
-        split (str/split line #"\n")
-        trimmed (map str/trim split)
-        filtered (filter #(> (count %) 0) trimmed)]
-    (apply array-map (interleave '(:time :song-title :artist) trimmed))))
+  (let [selectors [:.amp-recently-played-timestamp :.amp-recently-played-title :.amp-recently-played-artist]
+        [ts song-title artist] (map #(first (get (first (scraper/select e [%])) :content)) selectors)]
+    (apply array-map (interleave '(:time :song-title :artist) [ts song-title artist]))))
 
 (defn get-kday []
   (let [url "http://www.935kday.com/playlist/"
         selector [:ol.amp-recently-played :li]
         each-element (fn [e]
-                       (let [line (scraper/text e)
-                             split (str/split line #"\n")
-                             trimmed (map str/trim split)
-                             filtered (filter #(> (count %) 0) trimmed)]
-                         (apply array-map (interleave '(:time :song-title :artist) trimmed))))
+                       (let [selectors [:.amp-recently-played-timestamp :.amp-recently-played-title :.amp-recently-played-artist]
+                             [ts song-title artist] (map #(first (get (first (scraper/select e [%])) :content)) selectors)]
+                         (apply array-map (interleave '(:time :song-title :artist) [ts song-title artist]))))
         songs (scrape-html-for-songs (fetch-html url) selector each-element)
         old-list (wcar* (car/lrange redis-key 0 -1))
         place-in-database (fn [{time :time song-title :song-title artist :artist}] 
-                            (println "Inserting " (str time " " song-title " " artist))
-                            (wcar* (car/lpush redis-key (str time " " song-title " " artist)))
-                            (wcar* (car/set time (str song-title " " artist))))]
+                            (let [new-time (parse-kday-timestamp time)]
+                              (println "Inserting " (str new-time " " song-title " " artist))
+                              (wcar* (car/lpush redis-key (str new-time " " song-title " " artist)))
+                              (wcar* (car/set new-time (str song-title " " artist)))))]
     (map place-in-database songs)))
 
 (defn clear-redis []
@@ -113,6 +120,5 @@
                                                (with-interval-in-hours 24)
                                                (on-every-day)
                                                (starting-daily-at (time-of-day 00 00 00)))))]
-    (qs/schedule s job trigger)
-;    (qs/schedule s clear-redis-job clear-redis-trigger)
-    ))
+    (qs/schedule s clear-redis-job clear-redis-trigger)
+    (qs/schedule s job trigger)))
