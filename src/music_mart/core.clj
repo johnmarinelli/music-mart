@@ -14,8 +14,6 @@
         ring.util.response
         ring.adapter.jetty))
 
-(log/info "Right here")
-
 (def server1-conn {:pool {} :spec {:host "127.0.0.1" :port 6379}})
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
@@ -81,7 +79,7 @@
 (def app 
   (-> handler wrap-params))
 
-(defonce server (run-jetty app {:port 3003 :join? false}))
+(defonce server (run-jetty app {:port (get (System/getenv) "PORT" 3000) :join? false}))
 
 ;(.start server)
 ;(while true '())
