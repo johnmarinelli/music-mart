@@ -79,7 +79,7 @@
 (def app 
   (-> handler wrap-params))
 
-(defonce server (run-jetty app {:port (get (System/getenv) "PORT" 3000) :join? false}))
+(defonce server (run-jetty app {:port (get (System/getenv) "PORT" "3000") :join? false}))
 
 ;(.start server)
 ;(while true '())
