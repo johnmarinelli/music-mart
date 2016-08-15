@@ -14,8 +14,7 @@
         ring.util.response
         ring.adapter.jetty))
 
-(def server1-conn {:pool {} :spec {:host (get (System/getenv) "REDIS_HOST" "127.0.0.1") 
-                                   :port (Integer/parseInt (get (System/getenv) "REDIS_PORT" "6379"))}})
+(def server1-conn {:pool {} :spec {:uri (get (System/getenv) "REDIS_URL" "redis://localhost:6379")}})
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
 
