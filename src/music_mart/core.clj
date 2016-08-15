@@ -119,4 +119,5 @@
                                                (on-every-day)
                                                (starting-daily-at (time-of-day 00 00 00)))))]
     (qs/schedule s clear-redis-job clear-redis-trigger)
-    (qs/schedule s job trigger)))
+    (qs/schedule s job trigger))
+  (.start server))
