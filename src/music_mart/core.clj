@@ -117,10 +117,11 @@
     (qs/standby s)
  ;   (qs/standby rs)
     (when start? 
+      (println "Starting...")
       (do 
         (let [server (run-jetty app 
                                 {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
-                                 :join? false })]
+                                 :join? true })]
           (.start server))
 ;        (qs/schedule rs clear-redis-job clear-redis-trigger)
         (qs/schedule s job trigger)))))
