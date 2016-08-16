@@ -1,1 +1,1 @@
-web: lein run -m music-mart.core
+web: lein run --start y
