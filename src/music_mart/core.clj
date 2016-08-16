@@ -102,7 +102,7 @@
                                    (on-every-day)
                                    (starting-daily-at (time-of-day 00 00 01))
                                    (ending-daily-at (time-of-day 23 59 59)))))
-        rs (-> (qs/initialize) qs/start)
+        ;rs (-> (qs/initialize) qs/start)
         clear-redis-job (j/build
                          (j/of-type ClearRedisJob)
                          (j/with-identity (j/key "jobs.clear.2")))
@@ -122,6 +122,6 @@
                                 {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
                                  :join? false })]
           (.start server))
-        (qs/schedule rs clear-redis-job clear-redis-trigger)
+;        (qs/schedule rs clear-redis-job clear-redis-trigger)
         (qs/schedule s job trigger)))))
 
