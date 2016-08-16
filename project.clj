@@ -14,4 +14,8 @@
                  [clojurewerkz/quartzite "2.0.0"] ; scheduler
                  [org.clojure/tools.logging "0.3.1"] ; logging
                  ]
+  :plugins [[environ/environ.lein "0.2.1"]]
+  :hooks [environ.leiningen.hooks]
+  :uberjar-name "music-mart-standalone.jar"
+  :profiles {:production {:env {:production true}} :uberjar {:aot :all}}
   :main music-mart.core)
