@@ -79,12 +79,6 @@
 (def app 
   (-> handler wrap-params))
 
-(defonce server (run-jetty app {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) :join? false}))
-
-;(.start server)
-;(while true '())
-;(.stop server)
-
 (def ctr (atom 0))
 (defjob ScrapeKdayJob [ctx]
   (swap! ctr inc)
@@ -102,7 +96,7 @@
              (j/with-identity (j/key "jobs.kday.1")))
         trigger (t/build
                  (t/with-identity (t/key "triggers.1"))
-;                 (t/start-now)
+                 (t/start-now)
                  (t/with-schedule (schedule
                                    (with-interval-in-minutes 1)
                                    (on-every-day)
@@ -114,7 +108,7 @@
                          (j/with-identity (j/key "jobs.clear.2")))
         clear-redis-trigger (t/build
                              (t/with-identity (t/key "triggers.2"))
-;                             (t/start-now)
+                             (t/start-now)
                              (t/with-schedule (schedule
                                                (with-interval-in-hours 24)
                                                (on-every-day)
@@ -122,9 +116,12 @@
         start? (= "y" (second m))]
     (qs/standby s)
     (qs/standby rs)
-    (when start?
-          (do
-;            (qs/schedule rs clear-redis-job clear-redis-trigger)
-;            (qs/schedule s job trigger)
-;            (.start server)
-            ))))
+    (when start? 
+      (do 
+        (let [server (run-jetty app 
+                                {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
+                                 :join? false })]
+          (.start server))
+        (qs/schedule rs clear-redis-job clear-redis-trigger)
+        (qs/schedule s job trigger)))))
+
