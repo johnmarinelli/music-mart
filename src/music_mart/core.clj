@@ -102,7 +102,7 @@
              (j/with-identity (j/key "jobs.kday.1")))
         trigger (t/build
                  (t/with-identity (t/key "triggers.1"))
-                 (t/start-now)
+;                 (t/start-now)
                  (t/with-schedule (schedule
                                    (with-interval-in-minutes 1)
                                    (on-every-day)
@@ -114,7 +114,7 @@
                          (j/with-identity (j/key "jobs.clear.2")))
         clear-redis-trigger (t/build
                              (t/with-identity (t/key "triggers.2"))
-                             (t/start-now)
+;                             (t/start-now)
                              (t/with-schedule (schedule
                                                (with-interval-in-hours 24)
                                                (on-every-day)
@@ -126,6 +126,5 @@
           (do
 ;            (qs/schedule rs clear-redis-job clear-redis-trigger)
 ;            (qs/schedule s job trigger)
-            )))
-;  (.start server)
-  )
+;            (.start server)
+            ))))
