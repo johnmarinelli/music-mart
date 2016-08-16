@@ -81,6 +81,7 @@
 
 (def ctr (atom 0))
 (defjob ScrapeKdayJob [ctx]
+  (println "Scraping KDAY...")
   (swap! ctr inc)
   (let [res (get-kday)]
   (spit "test.txt" res :append true)))
@@ -114,15 +115,18 @@
                                                (on-every-day)
                                                (starting-daily-at (time-of-day 00 00 00)))))
         start? (= "y" (second m))]
+    (qs/schedule s job trigger)
     (qs/standby s)
  ;   (qs/standby rs)
     (when start? 
       (println "Starting...")
       (do 
-        (let [server (run-jetty app 
-                                {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
-                                 :join? true })]
-          (.start server))
+        (qs/start s)
+        (comment(let [server 1 (run-jetty app 
+                                          {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
+                                    :join? true })]
+                  (.start server)
+           ))
 ;        (qs/schedule rs clear-redis-job clear-redis-trigger)
-        (qs/schedule s job trigger)))))
+))))
 
