@@ -122,11 +122,12 @@
       (println "Starting...")
       (do 
         (qs/start s)
-        (comment(let [server 1 (run-jetty app 
-                                          {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
-                                    :join? true })]
-                  (.start server)
-           ))
+        (let [server (run-jetty app 
+                                {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
+                                 :join? true })]
+          (println "Starting web server")
+          (.start server)
+          )
 ;        (qs/schedule rs clear-redis-job clear-redis-trigger)
 ))))
 
