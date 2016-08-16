@@ -64,9 +64,7 @@
     (map place-in-database songs)))
 
 (defn clear-redis []
-  (wcar* (car/del redis-key))
-  (let [keys (wcar* (car/keys "*"))]
-    (map #(wcar* (car/del %)) keys)))
+  (wcar* (car/flushall)))
 
 (defn page []
   (let [songs-today (wcar* (car/lrange redis-key 0 -1))]
@@ -87,6 +85,7 @@
   (spit "test.txt" res :append true)))
 
 (defjob ClearRedisJob [ctx]
+  (println "Clearing Redis...")
   (clear-redis))
 
 (defn -main
@@ -103,7 +102,7 @@
                                    (on-every-day)
                                    (starting-daily-at (time-of-day 00 00 01))
                                    (ending-daily-at (time-of-day 23 59 59)))))
-        ;rs (-> (qs/initialize) qs/start)
+        rs (-> (qs/initialize) qs/start)
         clear-redis-job (j/build
                          (j/of-type ClearRedisJob)
                          (j/with-identity (j/key "jobs.clear.2")))
@@ -116,18 +115,17 @@
                                                (starting-daily-at (time-of-day 00 00 00)))))
         start? (= "y" (second m))]
     (qs/schedule s job trigger)
+    (qs/schedule rs clear-redis-job clear-redis-trigger)
     (qs/standby s)
- ;   (qs/standby rs)
+    (qs/standby rs)
     (when start? 
       (println "Starting...")
       (do 
         (qs/start s)
+        (qs/start rs)
         (let [server (run-jetty app 
                                 {:port (Integer/parseInt (get (System/getenv) "PORT" "3001")) 
                                  :join? true })]
           (println "Starting web server")
-          (.start server)
-          )
-;        (qs/schedule rs clear-redis-job clear-redis-trigger)
-))))
+          (.start server))))))
 
