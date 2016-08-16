@@ -115,7 +115,7 @@
                                                (starting-daily-at (time-of-day 00 00 00)))))
         start? (= "y" (second m))]
     (qs/standby s)
-    (qs/standby rs)
+ ;   (qs/standby rs)
     (when start? 
       (do 
         (let [server (run-jetty app 
