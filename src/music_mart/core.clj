@@ -98,7 +98,7 @@
                  (t/with-identity (t/key "triggers.1"))
                  (t/start-now)
                  (t/with-schedule (schedule
-                                   (with-interval-in-minutes 1)
+                                   (with-interval-in-minutes 30)
                                    (on-every-day)
                                    (starting-daily-at (time-of-day 00 00 01))
                                    (ending-daily-at (time-of-day 23 59 59)))))
