@@ -13,8 +13,11 @@
                  [enlive "1.1.6"] ; scraping
                  [clojurewerkz/quartzite "2.0.0"] ; scheduler
                  [org.clojure/tools.logging "0.3.1"] ; logging
+                 [hiccup "1.0.5"] ; html output
                  ]
-  :plugins [[environ/environ.lein "0.2.1"]]
+  :plugins [[environ/environ.lein "0.2.1"]
+            [lein-ring "0.9.7"]]
+  :ring {:handler music-mart.core/app}
   :hooks [environ.leiningen.hooks]
   :uberjar-name "music-mart-standalone.jar"
   :profiles {:production {:env {:production true}} :uberjar {:aot :all}}

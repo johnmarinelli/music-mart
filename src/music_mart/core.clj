@@ -12,7 +12,8 @@
                                                                     with-interval-in-minutes with-interval-in-hours]])
   (:use ring.middleware.params
         ring.util.response
-        ring.adapter.jetty))
+        ring.adapter.jetty
+        hiccup.core))
 
 (def server1-conn {:pool {} :spec {:uri (get (System/getenv) "REDIS_URL" "redis://localhost:6379")}})
 (defmacro wcar* [& body]
@@ -26,7 +27,7 @@
   (let [trimmed (str/trim ts)
         pieces (str/split trimmed #" ")
         midday (str/lower-case (second pieces))
-        [hh mm] (map read-string (str/split (first pieces) #":"))
+        [hh mm] (map #(Integer/parseInt %) (str/split (first pieces) #":"))
         afternoon (= midday "pm")
         timestamp-format (fn [h m] (format "%02d:%02d" h m))]
     (if afternoon
@@ -67,8 +68,10 @@
   (wcar* (car/flushall)))
 
 (defn page []
-  (let [songs-today (wcar* (car/lrange redis-key 0 -1))]
-    (map str songs-today)))
+  (let [songs-today (wcar* (car/lrange redis-key 0 -1))
+        html-songs (map #(html [:li [:div (str %)]]) songs-today)]
+    (html 
+     [:ul html-songs])))
 
 (defn handler [{{name "name"} :params}]
   (-> (response (page))
@@ -113,7 +116,7 @@
                                                (with-interval-in-hours 24)
                                                (on-every-day)
                                                (starting-daily-at (time-of-day 00 00 00)))))
-        start? (= "y" (second m))]
+        start? (and (= "--start" (first m)) (= "y" (second m)))]
     (qs/schedule s job trigger)
     (qs/schedule rs clear-redis-job clear-redis-trigger)
     (qs/standby s)
